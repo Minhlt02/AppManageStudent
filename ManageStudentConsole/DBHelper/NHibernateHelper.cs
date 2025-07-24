@@ -57,6 +57,7 @@ namespace ManageStudentConsole.DBHelper
                 {
                     m.FluentMappings.AddFromAssemblyOf<StudentMapping>();
                     m.FluentMappings.AddFromAssemblyOf<ClassroomsMapping>();
+                    m.FluentMappings.AddFromAssemblyOf<TeacherMapping>();
                 })
                 .BuildSessionFactory();
         }

@@ -66,24 +66,66 @@ namespace ManageStudentConsole.Repository
 
         public bool Delete()
         {
-            throw new NotImplementedException();
+            int studentID = int.Parse(Console.ReadLine());
+            Students students = (Students)FindById(studentID);
+            bool isDelete = false;
+            if (students != null && students._idStudent == studentID)
+            {
+                ISession session = NHibernateHelper.GetCurrentSession();
+                try
+                {
+                    using (ITransaction tx = session.BeginTransaction())
+                    {
+                        session.Delete(students);
+                        tx.Commit();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    NHibernateHelper.CloseSession(session);
+                }
+            }
+            else
+            {
+                Console.WriteLine("Không tìm thấy sinh viên!");
+            }
+            return isDelete;
         }
 
-        public Students FindById(int id)
+        public Object FindById(int id)
         {
             Students students = null;
+            Classrooms classrooms = null;
+            Teachers teachers = null;
 
             ISession session = NHibernateHelper.GetCurrentSession();
             try
             {
                 using (ITransaction tx = session.BeginTransaction())
                 {
-                    var student = session.Get<Students>(id);
+                    var student = session.Query<Students>().First(x=>x._idStudent == id);
+                    var classroom = session.Query<Classrooms>().First(x=>x._idClassroom == 1);
+                    var teacher = session.Query<Teachers>().First(x => x._idTeacher == 1); ;
                     if (student == null)
                     {
                         Console.WriteLine("Không tìm thấy sinh viên với ID đã nhập.");
                     }
+                    if (classroom == null)
+                    {
+                        Console.WriteLine("Không tìm thấy lớp với ID đã nhập.");
+                    }
+                    if (teacher == null)
+                    {
+                        Console.WriteLine("Không tìm thấy giáo viên với ID đã nhập.");
+                    }
                     students = student;
+                    classrooms = classroom;
+                    teachers = teacher;
+                    
                     tx.Commit();
                 }
             }
@@ -96,6 +138,30 @@ namespace ManageStudentConsole.Repository
                 NHibernateHelper.CloseSession(session);
             }
             return students;
+        }
+
+        public void DisplayFindById()
+        {
+            Console.WriteLine("Nhập MSSV muốn tìm: ");
+            int id = int.Parse(Console.ReadLine());
+            Console.WriteLine("{0,-6}| {1,-15}| {2,-12}| {3,-12}| {4,-10}| {5,-10}| {6,-15}","MSSV", "Tên Sinh Viên", "Ngày Sinh", "Địa Chỉ", "Lớp Học", "Môn học", "Tên giáo viên");
+            Students students = (Students)FindById(id);
+            if (students != null)
+            {
+                Console.WriteLine("{0,-6}| {1,-15}| {2,-12:dd/MM/yyyy}| {3,-12}| {4,-10}| {5,-10}| {6,-15}", 
+                    students._idStudent, 
+                    students._name, 
+                    students._birthday.ToString("dd/MM/yyyy"), 
+                    students._address, 
+                    students._classrooms._nameClassroom, 
+                    students._classrooms._nameSubject, 
+                    students._classrooms._teacher._nameTeacher);
+            }
+            else
+            {
+                Console.WriteLine("Không tìm thấy sinh viên với ID đã nhập.");
+            }
+
         }
 
         public int GenerateID()
@@ -131,9 +197,14 @@ namespace ManageStudentConsole.Repository
                     return;
                 }
 
+                Console.WriteLine("{0,-5} | {1,-15} | {2,-12} | {3,-10}", "MSSV", "Tên Sinh Viên", "Ngày Sinh", "Địa Chỉ");
                 foreach (var student in studentList)
                 {
-                    Console.WriteLine("{0} {1} {2}", student._idStudent, student._name, student._address);
+                    Console.WriteLine("{0,-5} | {1,-15} | {2,-12:dd/MM/yyyy} | {3,-10}",
+                    student._idStudent,
+                    student._name,
+                    student._birthday.ToString("dd/MM/yyyy"),
+                    student._address);
                 }
             } catch (Exception ex)
             {
@@ -148,13 +219,42 @@ namespace ManageStudentConsole.Repository
 
         public void SortByName()
         {
-            throw new NotImplementedException();
+            ISession session = NHibernateHelper.GetCurrentSession();
+            try
+            {
+                var studentList = session.Query<Students>().OrderBy(x=>x._name).ToList();
+
+                if (!studentList.Any())
+                {
+                    Console.WriteLine("No students found.");
+                    return;
+                }
+
+                Console.WriteLine("{0,-5} | {1,-15} | {2,-12} | {3,-10}", "MSSV", "Tên Sinh Viên", "Ngày Sinh", "Địa Chỉ");
+                foreach (var student in studentList)
+                {
+                    Console.WriteLine("{0,-5} | {1,-15} | {2,-12:dd/MM/yyyy} | {3,-10}",
+                    student._idStudent,
+                    student._name,
+                    student._birthday.ToString("dd/MM/yyyy"),
+                    student._address);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("An error occurred while retrieving students: " + ex.Message);
+            }
+            finally
+            {
+                NHibernateHelper.CloseSession(session);
+
+            }
         }
 
         public void Update()
         {
             int studentID = int.Parse(Console.ReadLine());
-            Students students = FindById(studentID);
+            Students students = (Students)FindById(studentID);
             if (students != null)
             {
                 Console.WriteLine("Nếu không muốn thay đổi hãy bỏ trống!");
@@ -198,16 +298,7 @@ namespace ManageStudentConsole.Repository
             {
                 using (ITransaction tx = session.BeginTransaction())
                 {
-                    //var classroom = session.Get<Classrooms>(classId);
-                    //if (classroom == null)
-                    //{
-                    //    Console.WriteLine("Không tìm thấy lớp học với ID đã nhập.");
-                    //    return;
-                    //}
-
-                    //// Gán classroom cho student
-                    //students._classrooms = classroom;
-                    session.Save(students);
+                    session.Update(students);
                     tx.Commit();
                 }
             }

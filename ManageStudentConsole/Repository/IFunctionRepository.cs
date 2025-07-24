@@ -15,6 +15,7 @@ namespace ManageStudentConsole.Repository
         void Update();
         bool Delete();
         void SortByName();
+        void DisplayFindById();
  
     }
 }

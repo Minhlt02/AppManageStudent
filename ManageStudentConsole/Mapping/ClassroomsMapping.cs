@@ -12,9 +12,11 @@ namespace ManageStudentConsole.Mapping
     {
         public ClassroomsMapping() 
         {
-            Id(x => x._idClassroom).Column("classroom_id").GeneratedBy.Identity();
-            Map(x => x._nameClasroom).Column("classroom_name");
+            Id(x => x._id).Column("id").GeneratedBy.Identity();
+            Map(x => x._idClassroom).Column("classroom_id");
+            Map(x => x._nameClassroom).Column("classroom_name");
             Map(x => x._nameSubject).Column("classroom_subject");
+            References(x => x._teacher, "teacher_id");
         }
     }
 }

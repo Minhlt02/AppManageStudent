@@ -8,6 +8,7 @@ namespace ManageStudentConsole.Entity
 {
     public class Students
     {
+        public virtual int _id { get; set; }
         public virtual int _idStudent { get; set; }
         public virtual string _name { get; set; }
         public virtual DateTime _birthday { get; set; }
@@ -15,9 +16,9 @@ namespace ManageStudentConsole.Entity
         public virtual Classrooms _classrooms { get; set; }
 
         public Students() { }
-        public Students(int id, string name, DateTime birthday, string address, Classrooms classrooms)
+        public Students(int studentId, string name, DateTime birthday, string address, Classrooms classrooms)
         {
-            this._idStudent = id;
+            this._idStudent = studentId;
             this._name = name;
             this._birthday = birthday;
             this._address = address;
@@ -26,7 +27,7 @@ namespace ManageStudentConsole.Entity
 
         public virtual string toString()
         {
-            return this._idStudent + "\t|" + this._name + "\t\t|" + this._birthday.ToString("dd/MM/yyyy") + "\t|" + this._address + "\t\t|" + this._classrooms.ToString();
+            return this._idStudent + "\t|" + this._name + "\t\t|" + this._birthday.ToString("dd/MM/yyyy") + "\t|" + this._address + "\t\t|" + this._classrooms.toString();
         }
     }
 }

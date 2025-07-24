@@ -13,7 +13,7 @@ namespace ManageStudentConsole.Mapping
     {
         public StudentMapping()
         {
-            Id(x => x._idStudent, "id").GeneratedBy.Identity();
+            Id(x => x._id, "id").GeneratedBy.Identity();
             Map(x => x._idStudent, "student_id");
             Map(x => x._name, "student_name");
             Map(x => x._birthday, "student_birthday");

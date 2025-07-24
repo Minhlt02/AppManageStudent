@@ -8,24 +8,25 @@ namespace ManageStudentConsole.Entity
 {
     public class Classrooms
     {
+        public virtual int _id { get; set; }
         public virtual int _idClassroom { get; set; }
-        public virtual string _nameClasroom { get; set; }
+        public virtual string _nameClassroom { get; set; }
         public virtual string _nameSubject { get; set; }
         public virtual Teachers _teacher { get; set; }
 
         public Classrooms() { }
 
-        public Classrooms(int id, string nameClasroom, string nameSubject, Teachers teachers)
+        public Classrooms(int classroomId, string classroomName, string subjectName, Teachers teachers)
         {
-            this._idClassroom = id;
-            this._nameClasroom = nameClasroom;
-            this._nameSubject = nameSubject;
+            this._idClassroom = classroomId;
+            this._nameClassroom = classroomName;
+            this._nameSubject = subjectName;
             this._teacher = teachers;
         }
 
-        public override string ToString()
+        public virtual string toString()
         {
-            return $"{_nameClasroom}\t| {_nameSubject}\t| {_teacher._nameTeacher}";
+            return this._idClassroom + "\t|" + this._nameClassroom + "\t\t|" + this._nameSubject + "\t|" + this._teacher.toString();
         }
     }
 }

@@ -79,22 +79,18 @@ namespace ManageStudentConsole.HandleException
                     Console.WriteLine("Nhập MSSV muốn thay đổi: ");
                     studentRepo.Update();
                     break;
-                //case 4:
-                //    Console.WriteLine("Nhập MSSV muốn xóa: ");
-                //    if (manageStudents.DeleteStudent())
-                //    {
-                //        Console.WriteLine("Đã xóa thành công sinh viên");
-                //    }
-                //    break;
-                //case 5:
-                //    manageStudents.SortStudentByName();
-                //    manageStudents.ShowStudents(manageStudents.GetStudents());
-                //    break;
+                case 4:
+                    Console.WriteLine("Nhập MSSV muốn xóa: ");
+                    if (studentRepo.Delete())
+                    {
+                        Console.WriteLine("Đã xóa thành công sinh viên");
+                    }
+                    break;
+                case 5:
+                    studentRepo.SortByName();
+                    break;
                 case 6:
-                    Console.WriteLine("Nhập MSSV muốn tìm: ");
-                    int id = int.Parse(Console.ReadLine());
-                    Console.WriteLine("MSSV\t| Tên Sinh Viên\t| Ngày Sinh\t| Địa Chỉ\t| Lớp Học\t| Môn học\t| Tên giáo viên");
-                    Console.WriteLine(studentRepo.FindById(id).toString());
+                    studentRepo.DisplayFindById();
                     break;
                 case 0:
                     Console.WriteLine("Cảm ơn bạn đã sử dụng chương trình!");
