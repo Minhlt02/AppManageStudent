@@ -14,6 +14,7 @@ namespace ManageStudentConsole.Entity
         public virtual DateTime _birthday { get; set; }
         public virtual string _address { get; set; }
         public virtual Classrooms _classrooms { get; set; }
+        
 
         public Students() { }
         public Students(int studentId, string name, DateTime birthday, string address, Classrooms classrooms)

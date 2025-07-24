@@ -1,4 +1,6 @@
-﻿using ManageStudentConsole.Repository;
+﻿using ManageStudentConsole.Controller;
+using ManageStudentConsole.Repository;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,8 @@ namespace ManageStudentConsole.HandleException
 {
     internal class HandleMenu
     {
-        StudentRepository studentRepo = new StudentRepository();
+        private readonly StudentController studentController;
+        private StudentRepository studentRepo;
 
         public HandleMenu() { }
         public int InputNumber()
@@ -66,31 +69,34 @@ namespace ManageStudentConsole.HandleException
 
         public void SelectFunction(int numberChoice)
         {
+            var serviceProvider = new ServiceCollection()
+                .AddScoped<IStudentRepository, StudentRepository>()
+                .AddTransient<StudentController>()
+                .BuildServiceProvider();
+
+            var studentController = serviceProvider.GetService<StudentController>();
             switch (numberChoice)
             {
                 case 1:
-                    studentRepo.Show();
+                    studentController.GetAllStudent();
                     break;
 
                 case 2:
-                    studentRepo.Add();
+                    studentController.AddStudent();
                     break;
                 case 3:
                     Console.WriteLine("Nhập MSSV muốn thay đổi: ");
-                    studentRepo.Update();
+                    studentController.UpdateStudent();
                     break;
                 case 4:
                     Console.WriteLine("Nhập MSSV muốn xóa: ");
-                    if (studentRepo.Delete())
-                    {
-                        Console.WriteLine("Đã xóa thành công sinh viên");
-                    }
+                    studentController.DeleteStudent();
                     break;
                 case 5:
-                    studentRepo.SortByName();
+                    studentController.SortByName();
                     break;
                 case 6:
-                    studentRepo.DisplayFindById();
+                    studentController.DisplayFindById();
                     break;
                 case 0:
                     Console.WriteLine("Cảm ơn bạn đã sử dụng chương trình!");

@@ -247,6 +247,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controller\StudentController.cs" />
     <Compile Include="DBHelper\NHibernateHelper.cs" />
     <Compile Include="Entity\Classrooms.cs" />
     <Compile Include="Entity\Students.cs" />
@@ -258,10 +259,8 @@
     <Compile Include="Mapping\TeacherMapping.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Repository\ClassroomRepository.cs" />
-    <Compile Include="Repository\IFunctionRepository.cs" />
+    <Compile Include="Repository\IStudentRepository.cs" />
     <Compile Include="Repository\StudentRepository.cs" />
-    <Compile Include="Repository\TeacherRepository.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

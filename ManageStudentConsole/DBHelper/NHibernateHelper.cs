@@ -23,6 +23,15 @@ namespace ManageStudentConsole.DBHelper
         {
             return _sessionFactory.OpenSession();
         }
+        public static ISession OpenSession()
+        {
+            var session = _sessionFactory.OpenSession();
+            if (session == null)
+            {
+                throw new InvalidOperationException("Could not open NHibernate session.");
+            }
+            return session;
+        }
         public static void CloseSession(ISession session)
         {
             session?.Dispose();

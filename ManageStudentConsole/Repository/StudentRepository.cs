@@ -2,6 +2,7 @@
 using ManageStudentConsole.Entity;
 using ManageStudentConsole.HandleException;
 using NHibernate;
+using NHibernate.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,305 +11,83 @@ using System.Threading.Tasks;
 
 namespace ManageStudentConsole.Repository
 {
-    internal class StudentRepository : IFunctionRepository
+    public class StudentRepository : IStudentRepository
     {
-        public List<Students> listStudents;
-        HandleFormatDate handleFormat = new HandleFormatDate();
+        private HandleFormatDate handleFormat;
 
-        public StudentRepository()
+        public void Add(Students students, int classId)
         {
-
-            listStudents = new List<Students>();
-        }
-        public void Add()
-        {
-            Students students = new Students();
-            students._idStudent = GenerateID();
-            Console.WriteLine("Nhập tên của sinh viên: ");
-            students._name = Console.ReadLine();
-
-            Console.WriteLine("Nhập ngày sinh của sinh viên (dd/mm/yyyy): ");
-            students._birthday = handleFormat.HandleFormatBirthday();
-
-            Console.WriteLine("Nhập địa chỉ của sinh viên: ");
-            students._address = Console.ReadLine();
-
-            Console.Write("Nhập ID lớp học: ");
-            int classId = int.Parse(Console.ReadLine());
-            Console.WriteLine("New student added successfully!");
-
-            ISession session = NHibernateHelper.GetCurrentSession();
-            try
+            using (var session = NHibernateHelper.OpenSession())
             {
                 using (ITransaction tx = session.BeginTransaction())
                 {
                     var classroom = session.Get<Classrooms>(classId);
-                    if (classroom == null)
-                    {
-                        Console.WriteLine("Không tìm thấy lớp học với ID đã nhập.");
-                        return;
-                    }
 
-                    // Gán classroom cho student
                     students._classrooms = classroom;
                     session.Save(students);
                     tx.Commit();
                 }
-            } catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                NHibernateHelper.CloseSession(session);
             }
         }
 
-        public bool Delete()
+        public void Delete(Students students)
         {
-            int studentID = int.Parse(Console.ReadLine());
-            Students students = (Students)FindById(studentID);
-            bool isDelete = false;
-            if (students != null && students._idStudent == studentID)
-            {
-                ISession session = NHibernateHelper.GetCurrentSession();
-                try
-                {
-                    using (ITransaction tx = session.BeginTransaction())
-                    {
-                        session.Delete(students);
-                        tx.Commit();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                finally
-                {
-                    NHibernateHelper.CloseSession(session);
-                }
-            }
-            else
-            {
-                Console.WriteLine("Không tìm thấy sinh viên!");
-            }
-            return isDelete;
-        }
 
-        public Object FindById(int id)
-        {
-            Students students = null;
-            Classrooms classrooms = null;
-            Teachers teachers = null;
-
-            ISession session = NHibernateHelper.GetCurrentSession();
-            try
+            using (var session = NHibernateHelper.OpenSession())
             {
                 using (ITransaction tx = session.BeginTransaction())
                 {
-                    var student = session.Query<Students>().First(x=>x._idStudent == id);
-                    var classroom = session.Query<Classrooms>().First(x=>x._idClassroom == 1);
-                    var teacher = session.Query<Teachers>().First(x => x._idTeacher == 1); ;
-                    if (student == null)
-                    {
-                        Console.WriteLine("Không tìm thấy sinh viên với ID đã nhập.");
-                    }
-                    if (classroom == null)
-                    {
-                        Console.WriteLine("Không tìm thấy lớp với ID đã nhập.");
-                    }
-                    if (teacher == null)
-                    {
-                        Console.WriteLine("Không tìm thấy giáo viên với ID đã nhập.");
-                    }
-                    students = student;
-                    classrooms = classroom;
-                    teachers = teacher;
-                    
+                    session.Delete(students);
                     tx.Commit();
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                NHibernateHelper.CloseSession(session);
-            }
-            return students;
         }
 
-        public void DisplayFindById()
+        public Students FindById(int id)
         {
-            Console.WriteLine("Nhập MSSV muốn tìm: ");
-            int id = int.Parse(Console.ReadLine());
-            Console.WriteLine("{0,-6}| {1,-15}| {2,-12}| {3,-12}| {4,-10}| {5,-10}| {6,-15}","MSSV", "Tên Sinh Viên", "Ngày Sinh", "Địa Chỉ", "Lớp Học", "Môn học", "Tên giáo viên");
-            Students students = (Students)FindById(id);
-            if (students != null)
+            using (var session = NHibernateHelper.OpenSession())
             {
-                Console.WriteLine("{0,-6}| {1,-15}| {2,-12:dd/MM/yyyy}| {3,-12}| {4,-10}| {5,-10}| {6,-15}", 
-                    students._idStudent, 
-                    students._name, 
-                    students._birthday.ToString("dd/MM/yyyy"), 
-                    students._address, 
-                    students._classrooms._nameClassroom, 
-                    students._classrooms._nameSubject, 
-                    students._classrooms._teacher._nameTeacher);
-            }
-            else
-            {
-                Console.WriteLine("Không tìm thấy sinh viên với ID đã nhập.");
-            }
-
-        }
-
-        public int GenerateID()
-        {
-            int currentID = 1;
-
-            if (listStudents.Count > 0 && listStudents != null)
-            {
-                currentID = listStudents[0]._idStudent;
-                foreach (var student in listStudents)
+                using (ITransaction tx = session.BeginTransaction())
                 {
-                    if (student._idStudent > currentID)
-                    {
-                        currentID = student._idStudent;
-                    }
+                    return session.Query<Students>()
+                        .Fetch(s => s._classrooms)
+                        .ThenFetch(c => c._teacher)
+                        .FirstOrDefault(s => s._idStudent == id);
                 }
-                currentID++;
-            }
-
-            return currentID;
-        }
-
-        public void Show()
-        {
-            ISession session = NHibernateHelper.GetCurrentSession();
-            try
-            {
-                var studentList = session.Query<Students>().ToList();
-
-                if (!studentList.Any())
-                {
-                    Console.WriteLine("No students found.");
-                    return;
-                }
-
-                Console.WriteLine("{0,-5} | {1,-15} | {2,-12} | {3,-10}", "MSSV", "Tên Sinh Viên", "Ngày Sinh", "Địa Chỉ");
-                foreach (var student in studentList)
-                {
-                    Console.WriteLine("{0,-5} | {1,-15} | {2,-12:dd/MM/yyyy} | {3,-10}",
-                    student._idStudent,
-                    student._name,
-                    student._birthday.ToString("dd/MM/yyyy"),
-                    student._address);
-                }
-            } catch (Exception ex)
-            {
-                Console.WriteLine("An error occurred while retrieving students: " + ex.Message);
-            }
-            finally
-            {
-                NHibernateHelper.CloseSession(session);
-
             }
         }
 
-        public void SortByName()
+        public List<Students> GetAll()
         {
-            ISession session = NHibernateHelper.GetCurrentSession();
-            try
+            using (var session = NHibernateHelper.OpenSession())
             {
-                var studentList = session.Query<Students>().OrderBy(x=>x._name).ToList();
-
-                if (!studentList.Any())
+                using (ITransaction tx = session.BeginTransaction())
                 {
-                    Console.WriteLine("No students found.");
-                    return;
+                    return session.Query<Students>().ToList();
                 }
-
-                Console.WriteLine("{0,-5} | {1,-15} | {2,-12} | {3,-10}", "MSSV", "Tên Sinh Viên", "Ngày Sinh", "Địa Chỉ");
-                foreach (var student in studentList)
-                {
-                    Console.WriteLine("{0,-5} | {1,-15} | {2,-12:dd/MM/yyyy} | {3,-10}",
-                    student._idStudent,
-                    student._name,
-                    student._birthday.ToString("dd/MM/yyyy"),
-                    student._address);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("An error occurred while retrieving students: " + ex.Message);
-            }
-            finally
-            {
-                NHibernateHelper.CloseSession(session);
-
             }
         }
 
-        public void Update()
+        public List<Students> SortByName()
         {
-            int studentID = int.Parse(Console.ReadLine());
-            Students students = (Students)FindById(studentID);
-            if (students != null)
+            using (var session = NHibernateHelper.OpenSession())
             {
-                Console.WriteLine("Nếu không muốn thay đổi hãy bỏ trống!");
-                Console.WriteLine("Thay đổi tên của sinh viên: ");
-                string name = Console.ReadLine();
-                if (name != null && name.Length > 0)
+                using (ITransaction tx = session.BeginTransaction())
                 {
-                    students._name = name;
-                }
-
-                Console.WriteLine("Thay đổi ngày sinh của sinh viên (Nhập 1 để bỏ qua hoặc bấm bất kỳ để thay đổi) : ");
-                string skip = Console.ReadLine();
-                if (skip.Equals("1"))
-                {
-                    students._birthday = students._birthday;
-                }
-                else
-                {
-                    Console.WriteLine("Nhập ngày sinh của sinh viên (dd/mm/yyyy): ");
-                    DateTime date = handleFormat.HandleFormatBirthday();
-                    if (date != null)
-                    {
-                        students._birthday = date;
-                    }
-                }
-
-
-                Console.WriteLine("Thay đổi địa chỉ của sinh viên: ");
-                string address = Console.ReadLine();
-                if (address != null && address.Length > 0)
-                {
-                    students._address = address;
+                    return session.Query<Students>().OrderBy(s => s._name).ToList();
                 }
             }
-            else
-            {
-                Console.WriteLine("Không tìm thấy sinh viên!");
-            }
-            ISession session = NHibernateHelper.GetCurrentSession();
-            try
+        }
+
+        public void Update(Students students)
+        {
+            using (var session = NHibernateHelper.OpenSession())
             {
                 using (ITransaction tx = session.BeginTransaction())
                 {
                     session.Update(students);
                     tx.Commit();
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                NHibernateHelper.CloseSession(session);
             }
         }
     }
